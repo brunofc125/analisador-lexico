@@ -5,12 +5,13 @@
  */
 package br.ufes.analisador.lexico.presenter;
 
+import br.ufes.analisador.lexico.presenter.table.TbModelToken;
 import br.ufes.analisador.lexico.view.PrincipalView;
 import java.awt.Font;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
@@ -27,15 +28,17 @@ public class PrincipalPresenter {
 
     private RSyntaxTextArea txtAreaCodigo;
     private RTextScrollPane scrTxtCodigo;
+    private TbModelToken tbTokens;
 
     public PrincipalPresenter() {
 
-        loadTxtCodigo();
         this.view = new PrincipalView();
         view.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        loadTxtCodigo();
+        loadTable();
         loadEpnSaida();
-
         this.view.setVisible(true);
+
     }
 
     private void loadTxtCodigo() {
@@ -68,20 +71,32 @@ public class PrincipalPresenter {
         scrTxtCodigo.setLineNumbersEnabled(true);
 
         scrTxtCodigo.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-
-        view.getPnlCodigo().addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentResized(ComponentEvent e) {
-                scrTxtCodigo.setBounds(0, 0, view.getPnlCodigo().getWidth(), view.getPnlCodigo().getHeight());
-            }
-        });
-
-        scrTxtCodigo.setBounds(0, 0, view.getPnlCodigo().getWidth(), view.getPnlCodigo().getHeight());
+        //scrTxtCodigo.setBounds(0, 0, view.getPnlCodigo().getWidth(), view.getPnlCodigo().getHeight());
         scrTxtCodigo.setVisible(true);
 
         view.getPnlCodigo().add(scrTxtCodigo);
+
+        view.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowStateChanged(WindowEvent e) {
+                scrTxtCodigo.setBounds(0, 0, view.getPnlCodigo().getWidth(), view.getPnlCodigo().getHeight());
+            }
+            @Override
+            public void windowOpened(WindowEvent e) {
+                scrTxtCodigo.setBounds(0, 0, view.getPnlCodigo().getWidth(), view.getPnlCodigo().getHeight());
+            }
+            @Override
+            public void windowActivated(WindowEvent e) {
+                scrTxtCodigo.setBounds(0, 0, view.getPnlCodigo().getWidth(), view.getPnlCodigo().getHeight());
+            }
+        });
     }
 
+    private void loadTable() {
+        this.tbTokens = new TbModelToken();
+        view.getTblSimbolos().setModel(this.tbTokens);
+    }
+    
     private boolean isAnaliseAutomatica() {
         return view.getChkItmAnaliseAuto().isSelected();
     }
