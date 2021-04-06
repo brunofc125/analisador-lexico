@@ -22,6 +22,11 @@
             <artifactId>jflex</artifactId>
             <version>1.8.2</version>
         </dependency>
+        <dependency>
+            <groupId>com.github.vbmacher</groupId>
+            <artifactId>java-cup-runtime</artifactId>
+            <version>11b-20160615</version>
+          </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -44,6 +49,43 @@
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>de.jflex</groupId>
+                <artifactId>jflex-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>src/main/java/</outputDirectory>
+                            <lexDefinitions>
+                                <!-- Localização do arquivo lex aqui -->
+                                <lexDefinition>src/main/java/br/ufes/analisador/lexico/jflex/cmenosmenos.lex</lexDefinition>
+                            </lexDefinitions>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <!-- Teste para geração do analisador sintático -->
+                <groupId>com.github.vbmacher</groupId>
+                <artifactId>cup-maven-plugin</artifactId>
+                <version>11b-20160615</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <outputDirectory>src/main/java/</outputDirectory>
+                    <cupDefinition>src/main/java/br/ufes/analisador/lexico/jflex/cmenosmenos.cup</cupDefinition>
+                    <symbolsInterface>false</symbolsInterface>
+                    <className>Parser</className>
                 </configuration>
             </plugin>
         </plugins>
