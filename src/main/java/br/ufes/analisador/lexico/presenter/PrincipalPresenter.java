@@ -5,15 +5,18 @@
  */
 package br.ufes.analisador.lexico.presenter;
 
+import br.ufes.analisador.lexico.analisador.Analisador;
 import br.ufes.analisador.lexico.presenter.table.TbModelToken;
 import br.ufes.analisador.lexico.view.PrincipalView;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rtextarea.RTextScrollPane;
@@ -37,7 +40,12 @@ public class PrincipalPresenter {
         loadTxtCodigo();
         loadTable();
         loadEpnSaida();
-        this.view.setVisible(true);
+        
+        this.view.getBtnExecutar().addActionListener((ActionEvent ae) -> {
+            this.executarAnalise();
+        });
+        
+        this.view.setVisible(true);       
 
     }
 
@@ -53,7 +61,7 @@ public class PrincipalPresenter {
             @Override
             public void keyReleased(KeyEvent ke) {
                 if (isAnaliseAutomatica()) {
-                    //executarAnalise();
+                    executarAnalise();
                 }
             }
 
@@ -117,6 +125,21 @@ public class PrincipalPresenter {
         view.getEpnSaida().putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
         view.getEpnSaida().setContentType("text/html");
         view.getEpnSaida().setFont(new Font(Font.MONOSPACED, Font.PLAIN, 11));
+    }
+    
+    private void executarAnalise() {
+
+        String codigo = txtAreaCodigo.getText();
+
+        try {
+            Analisador analisador = new Analisador(codigo);
+            analisador.executar();
+            
+            this.tbTokens.setTokens(analisador.getTokens());
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(view, "Erro ao analisar código: \n" + ex.getMessage());
+        }
     }
 
 }

@@ -1,33 +1,87 @@
 package br.ufes.analisador.lexico.jflex;
 
-import java_cup.runtime.*;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java_cup.runtime.Symbol;
+import java_cup.runtime.ComplexSymbolFactory;
+import java_cup.runtime.ComplexSymbolFactory.Location;
 
 %%
 
-%{
-
-StringBuilder string = new StringBuilder();
-
-private void imprimir(String descricao, String lexema) {
-    System.out.println(lexema + " - " + descricao);
-}
-
-private Symbol symbol(int type) {
-    return new Symbol(type, yyline+1, yycolumn+1);
-}
-
-private Symbol symbol(int type, Object value) {
-    return new Symbol(type, yyline+1, yycolumn+1, value);
-}
-
-%}
-
 %public
 %class Lexer
+%cup
+%type Symbol
 %line
 %column
+%char
 
-%cup
+%state STRING
+%state CHAR
+
+%init{
+    this.symbols = new ArrayList<>();
+%init}
+
+%{
+
+    private final List<Symbol> symbols;
+    private ComplexSymbolFactory symbolFactory;
+    private Character caracterRead;
+    StringBuffer string = new StringBuffer();
+    Symbol stringSymbol;
+
+    public Lexer(java.io.Reader in, ComplexSymbolFactory symbolFactory){
+	this(in);
+	this.symbolFactory = symbolFactory;
+    }
+
+    public void executar() throws IOException {
+        while(next_token() != null) continue;
+    }
+    
+    public List<Symbol> getSymbols() {
+        return this.symbols;
+    }
+
+    private void addSymbol(Symbol symbol) {
+        this.symbols.add(symbol);
+    }
+
+    private Symbol symbol(int sym) {
+        return symbol(yytext(), sym, yytext());
+    }
+
+    private Symbol symbol(String name, int sym) {
+        Symbol symbol = symbolFactory.newSymbol(name, sym, new Location(yyline+1,yycolumn+1,((int)yychar)), new Location(yyline+1,yycolumn+yylength(),((int)yychar)+yylength()));
+        addSymbol(symbol);
+        return symbol;
+    }
+
+    private Symbol symbol(String name, int sym, Object val) {
+        Location left = new Location(yyline+1,yycolumn+1,((int)yychar));
+        Location right = new Location(yyline+1,yycolumn+yylength(), ((int)yychar)+yylength());
+        Symbol symbol = symbolFactory.newSymbol(name, sym, left, right,val);
+        addSymbol(symbol);
+        return symbol;
+    }
+
+    private Symbol symbol(String name, int sym, Object val,int buflength) {
+        Location left = new Location(yyline+1,yycolumn+yylength()-buflength,((int)yychar)+yylength()-buflength);
+        Location right = new Location(yyline+1,yycolumn+yylength(), ((int)yychar)+yylength());
+        Symbol symbol = symbolFactory.newSymbol(name, sym, left, right,val);
+        addSymbol(symbol);
+        return symbol;
+    }
+    
+    /* Está aqui apenas para não adicionar o EOF à lista de tokens */
+    private Symbol symbolEOF(String name, int sym){
+        Symbol symbol = symbolFactory.newSymbol(name, sym, new Location(yyline+1,yycolumn+1,((int)yychar)), new Location(yyline+1,yycolumn+yylength(),((int)yychar)+yylength()));
+        return symbol;
+    }
+
+%}
 
 /* main character classes */
 LineTerminator = \r|\n|\r\n
@@ -51,6 +105,9 @@ NUM_FLOAT = {NUM_INT}[.][0-9]+
 /* string and character literals */
 StringCharacter = [^\r\n\"\\]
 SingleCharacter = [^\r\n\'\\]
+EscapeCharter = [\\\'|\\\\|\\\"|\\r|\\n|\\t]
+CHAR = \'
+LITERAL = \"
 
 %%
 
@@ -118,13 +175,10 @@ SingleCharacter = [^\r\n\'\\]
   "*="                           { return symbol(sym.MULTEQ); }
   "/="                           { return symbol(sym.DIVEQ); }
   "%="                           { return symbol(sym.MODEQ); }
-  
-  /* String */
-  \"                             { yybegin(YYINITIAL); return symbol(sym.STRING, string.toString()); }
 
-  /* Caracter */
-  \'                             { yybegin(YYINITIAL); return symbol(sym.CHAR, yytext().charAt(0)); }
-  
+  {LITERAL}                      { string.setLength(0); stringSymbol = symbol("STRING", sym.STRING); yybegin(STRING);}
+  {CHAR}                         { yybegin(CHAR);}
+
   {NUM_INT}                      { return symbol(sym.NUM_INT); }
   {NUM_FLOAT}                    { return symbol(sym.NUM_FLOAT); }
   
@@ -135,5 +189,67 @@ SingleCharacter = [^\r\n\'\\]
   {WhiteSpace}                   { /* ignore */ }
 
   /* Identificador */ 
-  {Identifier}                   { return symbol(sym.ID, yytext()); }  
+  {Identifier}                   { return symbol("ID", sym.ID, yytext()); }  
+}
+
+<STRING> {
+    \"                              { 
+                                        yybegin(YYINITIAL); 
+                                        stringSymbol.value = string.toString();
+                                        return stringSymbol;
+                                    }
+    [^\n\r\"\\]+                    { string.append( yytext() ); }
+    \\t                             { string.append('\t'); }
+    \\n                             { string.append('\n'); }
+    \\r                             { string.append('\r'); }
+    \\\"                            { string.append('\"'); }
+    \\\\                            { string.append('\\'); }
+    
+    \n                              { yybegin(YYINITIAL); }
+}
+
+<CHAR> {
+    [^\n\r\"\\]\'                   {
+                                        yybegin(YYINITIAL); 
+                                        return symbol("CARACTERE", sym.CHAR, " " + yytext().charAt(0));
+                                    }
+    \\t\'                           {
+                                        yybegin(YYINITIAL); 
+                                        caracterRead = '\t';
+                                        return symbol("CARACTERE", sym.CHAR, caracterRead.toString());
+                                    }
+    \\n\'                           {
+                                        yybegin(YYINITIAL); 
+                                        caracterRead = '\n'; 
+                                        return symbol("CARACTERE", sym.CHAR, caracterRead.toString());
+                                    }
+    \\r\'                           {
+                                        yybegin(YYINITIAL); 
+                                        caracterRead = '\r'; 
+                                        return symbol("CARACTERE", sym.CHAR, caracterRead.toString());
+                                    }
+    \\\"\'                          {
+                                        yybegin(YYINITIAL); 
+                                        caracterRead = '\"'; 
+                                        return symbol("CARACTERE", sym.CHAR, caracterRead.toString());
+                                    }
+    \\\\\'                          {
+                                        yybegin(YYINITIAL); 
+                                        caracterRead = '\\'; 
+                                        return symbol("CARACTERE", sym.CHAR, caracterRead.toString());
+                                    }
+    \\\'\'                          {
+                                        yybegin(YYINITIAL); 
+                                        caracterRead = '\''; 
+                                        return symbol("CARACTERE", sym.CHAR, caracterRead.toString());
+                                    }
+    \\[^tnr\"\'\\]\'                { 
+                                        yybegin(YYINITIAL);
+                                    }
+    {EscapeCharter}{EscapeCharter}+\'? | [^\n\r\"\\\'][^\n\r\"\\\']+\'? {
+                                        yybegin(YYINITIAL);
+                                    }
+    [^\n\r\"\\\']*\n                {
+                                        yybegin(YYINITIAL);
+                                    }
 }

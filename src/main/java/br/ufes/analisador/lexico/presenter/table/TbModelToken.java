@@ -6,6 +6,7 @@
 package br.ufes.analisador.lexico.presenter.table;
 
 import java.util.ArrayList;
+import java.util.List;
 import java_cup.runtime.ComplexSymbolFactory;
 import java_cup.runtime.Symbol;
 import javax.swing.table.AbstractTableModel;
@@ -16,7 +17,7 @@ import javax.swing.table.AbstractTableModel;
  */
 public class TbModelToken extends AbstractTableModel {
 
-    private ArrayList<Symbol> symbols;
+    private List<Symbol> symbols;
     private final String[] colunas;
 
     public TbModelToken() {
@@ -29,7 +30,7 @@ public class TbModelToken extends AbstractTableModel {
         super.fireTableDataChanged();
     }
 
-    public void setTokens(ArrayList<Symbol> tokens) {
+    public void setTokens(List<Symbol> tokens) {
         this.symbols = tokens;
         super.fireTableDataChanged();
     }
