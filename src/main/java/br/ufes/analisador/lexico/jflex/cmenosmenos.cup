@@ -104,8 +104,7 @@ non terminal literal;
 start with programa;
 
 // Gramática
-//programa ::= especificador tipo ID programa2 | DEFINE ID num CRLF programa | ; verificar depois o ERRO
-programa ::= especificador tipo ID | DEFINE ID num CRLF programa | ;
+programa ::= especificador tipo ID programa2 | DEFINE ID num CRLF programa | ; verificar depois o ERRO
 especificador ::= AUTO | STATIC | EXTERN | CONST | ;
 tipo ::= VOID | CHAR | FLOAT | DOUBLE | SIGNED inteiro | UNSIGNED inteiro | inteiro;
 
