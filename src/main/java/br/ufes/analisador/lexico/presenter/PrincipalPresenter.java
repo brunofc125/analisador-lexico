@@ -87,15 +87,15 @@ public class PrincipalPresenter {
         view.addWindowListener(new WindowAdapter() {
             @Override
             public void windowStateChanged(WindowEvent e) {
-                scrTxtCodigo.setBounds(0, 0, view.getPnlCodigo().getWidth(), view.getPnlCodigo().getHeight());
+                scrTxtCodigo.setBounds(0, 0, 2*view.getPnlCodigo().getWidth(), 2*view.getPnlCodigo().getHeight());
             }
             @Override
             public void windowOpened(WindowEvent e) {
-                scrTxtCodigo.setBounds(0, 0, view.getPnlCodigo().getWidth(), view.getPnlCodigo().getHeight());
+                scrTxtCodigo.setBounds(0, 0, 2*view.getPnlCodigo().getWidth(), 2*view.getPnlCodigo().getHeight());
             }
             @Override
             public void windowActivated(WindowEvent e) {
-                scrTxtCodigo.setBounds(0, 0, view.getPnlCodigo().getWidth(), view.getPnlCodigo().getHeight());
+                scrTxtCodigo.setBounds(0, 0, 2*view.getPnlCodigo().getWidth(), 2*view.getPnlCodigo().getHeight());
             }
         });
     }
