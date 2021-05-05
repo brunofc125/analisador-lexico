@@ -118,11 +118,12 @@ listaParamRestante ::= declaracaoParam declParamRestante;
 declaracaoParam ::= tipo ID declaracaoParam2;
 declaracaoParam2 ::= LBRACK num RBRACK | ;
 declParamRestante ::= COMMA listaParamRestante | ;
-bloco ::= LBRACE conjuntoInst RBRACE | SEMICOLON conjuntoInst ;
-conjuntoInst ::= programa conjuntoInst | instrucoes conjuntoInst | ;
-instrucoes ::= ID expressao SEMICOLON | RETURN expr SEMICOLON | PRINTF LPAREN expr RPAREN SEMICOLON | SCANF LPAREN ID RPAREN SEMICOLON | BREAK SEMICOLON | IF LPAREN expr RPAREN instrucoes instrucoesIf;
+bloco ::= LBRACE conjuntoInst RBRACE;
+conjuntoInst ::= | conjuntoInst instrucoes;
+instrucoes ::= ID expressao SEMICOLON | RETURN expr SEMICOLON | PRINTF LPAREN expr RPAREN SEMICOLON | SCANF LPAREN ID RPAREN SEMICOLON | BREAK SEMICOLON | instrucoesIf | SEMICOLON;
 
-instrucoesIf ::= ELSE instrucoes | ;
+instrucoesIf ::= IF LPAREN expr RPAREN LBRACE conjuntoInst RBRACE | IF LPAREN expr RPAREN LBRACE conjuntoInst RBRACE ELSE LBRACE conjuntoInst RBRACE | IF LPAREN expr RPAREN LBRACE conjuntoInst RBRACE ELSE instrucoesIf;
+
 expressao ::= atribuicao | LBRACK expr RBRACK atribuicao | LPAREN exprList RPAREN | ;
 atribuicao ::= operadorAtrib expr;
 operadorAtrib ::= EQ | MULTEQ | DIVEQ | MODEQ | PLUSEQ | MINUSEQ;
