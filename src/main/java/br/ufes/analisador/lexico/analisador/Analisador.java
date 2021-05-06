@@ -37,8 +37,8 @@ public class Analisador {
     }
 
     public void analiseLexica() throws Exception {
-        while(lexer.next_token().sym != sym.EOF) {
-        }
+        this.lexer.executar();
+        erros.addAll(this.lexer.getErros());
     }
 
     public void analiseSintatica() throws Exception {

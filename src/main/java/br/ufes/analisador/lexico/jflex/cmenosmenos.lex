@@ -1,5 +1,6 @@
 package br.ufes.analisador.lexico.jflex;
 
+import br.ufes.analisador.lexico.analisador.ErroAnalisado;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,11 +23,13 @@ import java_cup.runtime.ComplexSymbolFactory.Location;
 
 %init{
     this.symbols = new ArrayList<>();
+    this.errors = new ArrayList<>();
 %init}
 
 %{
 
     private final List<Symbol> symbols;
+    private final ArrayList<ErroAnalisado> errors;
     private ComplexSymbolFactory symbolFactory;
     private Character caracterRead;
     StringBuffer string = new StringBuffer();
@@ -38,7 +41,22 @@ import java_cup.runtime.ComplexSymbolFactory.Location;
     }
 
     public void executar() throws IOException {
-        while(next_token() != null) continue;
+        while(next_token().sym != sym.EOF);
+    }
+
+    public ArrayList<ErroAnalisado> getErros() {
+        return this.errors;
+    }
+
+    public int countErros() {
+        return this.errors.size();
+    }
+
+    private void addErro(String erro) {
+        Location left = new Location(yyline+1,yycolumn+1,((int)yychar));
+        Location right = new Location(yyline+1,yycolumn+yylength(), ((int)yychar+yylength()));
+        Symbol symbol = symbolFactory.newSymbol("ERRO LÉXICO -> ", sym.error, left, right);
+        this.errors.add(new ErroAnalisado("ERRO LÉXICO >>> " + erro, symbol));
     }
     
     public List<Symbol> getSymbols() {
@@ -107,6 +125,12 @@ SingleCharacter = [^\r\n\'\\]
 EscapeCharter = [\\\'|\\\\|\\\"|\\r|\\n|\\t]
 CHAR = \'
 LITERAL = \"
+
+/* erros */
+errorComment = [\/][*]
+charterLimit = (([_] | [:jletter:])+([_] | [:jletterdigit:])*){32}[^\n ]*
+incorrectNumber = {NUM_INT}[.] | [.]{NUM_INT} | {NUM_INT}[.]{NUM_INT}[.]([0-9]|[.])*
+
 
 %%
 
@@ -189,6 +213,10 @@ LITERAL = \"
 
   /* Identificador */ 
   {Identifier}                   { return symbol("ID", sym.ID, yytext()); }  
+
+  {errorComment}                 { this.addErro("Linha " + (yyline+1) + ", coluna " + yycolumn + ": Falta fechar o comentário."); }    
+  {charterLimit}                 { this.addErro("Linha " + (yyline+1) + ", coluna " + yycolumn + ": Identificador " + yytext().toUpperCase() + " excedeu o limite de caracteres."); }
+  {incorrectNumber}              { this.addErro("Linha " + (yyline+1) + ", coluna " + yycolumn + ": " + yytext().toUpperCase() + " não é um número."); }
 }
 
 <STRING> {
@@ -204,7 +232,10 @@ LITERAL = \"
     \\\"                            { string.append('\"'); }
     \\\\                            { string.append('\\'); }
     
-    \n                              { yybegin(YYINITIAL); }
+    \n                              { 
+                                        yybegin(YYINITIAL);
+                                        this.addErro("Linha " + (yyline+1) + ", coluna " + yycolumn + ": Aspas sem fechamento.");
+                                    }
 }
 
 <CHAR> {
@@ -250,6 +281,7 @@ LITERAL = \"
                                     }
     [^\n\r\"\\\']*\n                {
                                         yybegin(YYINITIAL);
+                                        this.addErro("Linha " + (yyline+1) + ", coluna " + yycolumn + ": Aspas sem fechamento.");
                                     }
 }
 
