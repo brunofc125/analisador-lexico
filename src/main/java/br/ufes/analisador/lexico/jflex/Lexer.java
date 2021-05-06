@@ -753,7 +753,6 @@ public class Lexer implements java_cup.runtime.Scanner {
         return symbol;
     }
     
-    /* Está aqui apenas para não adicionar o EOF à lista de tokens */
     private Symbol symbolEOF(String name, int sym){
         Symbol symbol = symbolFactory.newSymbol(name, sym, new Location(yyline+1,yycolumn+1,((int)yychar)), new Location(yyline+1,yycolumn+yylength(),((int)yychar)+yylength()));
         return symbol;
@@ -1165,7 +1164,9 @@ public class Lexer implements java_cup.runtime.Scanner {
       if (zzInput == YYEOF && zzStartRead == zzCurrentPos) {
         zzAtEOF = true;
             zzDoEOF();
-          { return null; }
+              {
+                return symbolEOF("EOF", sym.EOF);
+              }
       }
       else {
         switch (zzAction < 0 ? zzAction : ZZ_ACTION[zzAction]) {

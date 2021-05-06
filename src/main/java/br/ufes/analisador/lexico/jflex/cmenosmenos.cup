@@ -3,6 +3,131 @@ package br.ufes.analisador.lexico.jflex;
 import java_cup.runtime.*;
 import java.util.*;
 import java.io.*;
+import java_cup.runtime.ComplexSymbolFactory;
+import java_cup.runtime.ComplexSymbolFactory.ComplexSymbol;
+import java_cup.runtime.Symbol;
+import br.ufes.analisador.lexico.jflex.Lexer;
+import br.ufes.analisador.lexico.analisador.ErroAnalisado;
+
+parser code {:
+
+    private ArrayList<ErroAnalisado> errosSintaticos;
+    private Map<String, String> mapTokens;
+
+    public Parser(Lexer lex, ComplexSymbolFactory sf) {
+        super(lex,sf);
+        errosSintaticos = new ArrayList<>();
+        this.mapTokens = new HashMap<>();
+        this.mapTokens.put("DEFINE", "#define");
+        this.mapTokens.put("AUTO", "auto");
+        this.mapTokens.put("STATIC", "static");
+        this.mapTokens.put("EXTERN", "extern");
+        this.mapTokens.put("CONST", "const");
+        this.mapTokens.put("VOID", "void");
+        this.mapTokens.put("CHAR", "char");
+        this.mapTokens.put("FLOAT", "float");
+        this.mapTokens.put("DOUBLE", "double");
+        this.mapTokens.put("SIGNED", "signed");
+        this.mapTokens.put("UNSIGNED", "unsigned");
+        this.mapTokens.put("INT", "int");
+        this.mapTokens.put("SHORT", "short");
+        this.mapTokens.put("LONG", "long");
+        this.mapTokens.put("RETURN", "return");
+        this.mapTokens.put("PRINTF", "printf");
+        this.mapTokens.put("SCANF", "scanf");
+        this.mapTokens.put("BREAK", "break");
+        this.mapTokens.put("IF", "if");
+        this.mapTokens.put("ELSE", "else");
+        this.mapTokens.put("LPAREN", "(");
+        this.mapTokens.put("RPAREN", ")");
+        this.mapTokens.put("LBRACE", "{");
+        this.mapTokens.put("RBRACE", "}");
+        this.mapTokens.put("LBRACK", "[");
+        this.mapTokens.put("RBRACK", "]");
+        this.mapTokens.put("SEMICOLON", ";");
+        this.mapTokens.put("COMMA", ",");
+        this.mapTokens.put("DOT", ".");
+        this.mapTokens.put("CRLF", "\\n");
+        this.mapTokens.put("EQ", "=");
+        this.mapTokens.put("GT", ">");
+        this.mapTokens.put("LT", "<");
+        this.mapTokens.put("NOT", "!");
+        this.mapTokens.put("EQEQ", "==");
+        this.mapTokens.put("LTEQ", "<=");
+        this.mapTokens.put("GTEQ", ">=");
+        this.mapTokens.put("NOTEQ", "!=");
+        this.mapTokens.put("AND", "AND");
+        this.mapTokens.put("OR", "OR");
+        this.mapTokens.put("PLUS", "+");
+        this.mapTokens.put("MINUS", "-");
+        this.mapTokens.put("MULT", "*");
+        this.mapTokens.put("DIV", "/");
+        this.mapTokens.put("MOD", "%");
+        this.mapTokens.put("PLUSEQ", "+=");
+        this.mapTokens.put("MINUSEQ", "-=");
+        this.mapTokens.put("MULTEQ", "*=");
+        this.mapTokens.put("DIVEQ", "/=");
+        this.mapTokens.put("MODEQ", "%=");
+        this.mapTokens.put("EOF", "Final do Arquivo");
+        this.mapTokens.put("error", "Erro");
+        this.mapTokens.put("NUM_FLOAT", "Número real");
+        this.mapTokens.put("NUM_INT", "Número inteiro");
+        this.mapTokens.put("STRING", "Texto");
+        this.mapTokens.put("ID", "Identificador");
+    }
+
+    public ArrayList<ErroAnalisado> getErros() {
+        return errosSintaticos;
+    }
+
+    @Override
+    public void syntax_error(Symbol cur_token) {
+        ComplexSymbol symbol = (ComplexSymbol) cur_token;
+        
+        List<Integer> expected_tokens_ids = this.expected_token_ids();
+        int i = 0;
+        while(this.expected_token_ids().isEmpty()) {
+            expected_tokens_ids = this.expected_token_ids();
+            if(i == 1000) {
+                break;
+            }
+            i++;
+        }
+        
+        Iterator<Integer> it = expected_tokens_ids.iterator();
+        int tokenId = it.next();
+        
+        String error = "ERRO SINTÁTICO -> Linha "
+                        + symbol.getLeft().getLine()
+                        + ", coluna "
+                        + symbol.getLeft().getColumn()
+                        + ": esperado [\"" + this.mapTokens.getOrDefault(sym.terminalNames[tokenId], "Token não identificado");
+        
+        while(it.hasNext()) {
+            tokenId = it.next();
+            error += "\", \"" + this.mapTokens.getOrDefault(sym.terminalNames[tokenId], "Token não identificado");
+        }
+
+        error += "\"], encontrado [\"" + symbol.value + "\"].";
+
+        this.report_error(error, symbol);
+    }
+
+    @Override
+    public void report_fatal_error(String message, Object info) throws Exception {
+        super.report_fatal_error("Não foi possível continuar a análise.", info);
+    }
+
+    @Override
+    public void report_error(String message, Object info) {
+        this.errosSintaticos.add(new ErroAnalisado(message, (Symbol) info));
+    }
+
+:};
+
+scan with {: 
+    return this.getScanner().next_token();
+:};
 
 // Terminal
 terminal AUTO;
@@ -104,7 +229,7 @@ non terminal literal;
 start with programa;
 
 // Gramática
-programa ::= especificador tipo ID programa2 | DEFINE ID num CRLF programa | ;
+programa ::= especificador tipo ID programa2 | DEFINE ID num programa | ;
 especificador ::= AUTO | STATIC | EXTERN | CONST | ;
 tipo ::= VOID | CHAR | FLOAT | DOUBLE | SIGNED inteiro | UNSIGNED inteiro | inteiro;
 
@@ -120,7 +245,7 @@ declaracaoParam2 ::= LBRACK num RBRACK | ;
 declParamRestante ::= COMMA listaParamRestante | ;
 bloco ::= LBRACE conjuntoInst RBRACE;
 conjuntoInst ::= | conjuntoInst instrucoes;
-instrucoes ::= ID expressao SEMICOLON | RETURN expr SEMICOLON | PRINTF LPAREN expr RPAREN SEMICOLON | SCANF LPAREN ID RPAREN SEMICOLON | BREAK SEMICOLON | instrucoesIf | SEMICOLON;
+instrucoes ::= ID expressao SEMICOLON | RETURN expr SEMICOLON | PRINTF LPAREN expr RPAREN SEMICOLON | SCANF LPAREN ID RPAREN SEMICOLON | BREAK SEMICOLON | instrucoesIf | SEMICOLON | especificador tipo ID SEMICOLON | especificador tipo ID atribuicao SEMICOLON;
 
 instrucoesIf ::= IF LPAREN expr RPAREN LBRACE conjuntoInst RBRACE | IF LPAREN expr RPAREN LBRACE conjuntoInst RBRACE ELSE LBRACE conjuntoInst RBRACE | IF LPAREN expr RPAREN LBRACE conjuntoInst RBRACE ELSE instrucoesIf;
 

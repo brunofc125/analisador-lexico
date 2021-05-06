@@ -6,6 +6,7 @@
 package br.ufes.analisador.lexico.presenter;
 
 import br.ufes.analisador.lexico.analisador.Analisador;
+import br.ufes.analisador.lexico.analisador.ErroAnalisado;
 import br.ufes.analisador.lexico.presenter.table.TbModelToken;
 import br.ufes.analisador.lexico.view.PrincipalView;
 import java.awt.Font;
@@ -14,6 +15,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.List;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -127,6 +129,40 @@ public class PrincipalPresenter {
         view.getEpnSaida().setFont(new Font(Font.MONOSPACED, Font.PLAIN, 11));
     }
     
+    private void exibirErros(List<ErroAnalisado> erros) {
+        String saida = "<html>" + "<hr>";
+
+        saida += "<b>Análise do Código Fonte Finalizada...</b><br>" + "<hr>";
+
+        int countErros = erros.size() - 1;
+
+        if (countErros > 0) {
+            saida += "<font color=\"red\">" + "<b>";
+            if (countErros == 1) {
+                saida += countErros + " Erro Encontrado:";
+            } else {
+                saida += countErros + " Erros Encontrados:";
+            }
+
+            saida += "</b></font><br>";
+
+            for (ErroAnalisado e : erros) {
+                String msg = e.getMessage();
+                if (msg.contains(":")) {
+                    int indice = msg.indexOf(":");
+
+                    saida += "&nbsp;&nbsp;&nbsp;&nbsp;";
+                    saida += "<b>" + msg.substring(0, indice) + "</b>" + msg.substring(indice) + "<br>";
+                } else {
+                    saida += "&nbsp;&nbsp;&nbsp;&nbsp;" + msg + "<br>";
+                }
+
+            }
+        }
+        saida += "<hr>" + "</html>";
+        view.getEpnSaida().setText(saida);
+    }
+    
     private void executarAnalise() {
 
         String codigo = txtAreaCodigo.getText();
@@ -136,6 +172,8 @@ public class PrincipalPresenter {
             analisador.executar();
             
             this.tbTokens.setTokens(analisador.getTokens());
+            
+            exibirErros(analisador.getErros());
 
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(view, "Erro ao analisar código: \n" + ex.getMessage());

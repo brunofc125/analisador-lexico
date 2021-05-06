@@ -75,7 +75,6 @@ import java_cup.runtime.ComplexSymbolFactory.Location;
         return symbol;
     }
     
-    /* Está aqui apenas para não adicionar o EOF à lista de tokens */
     private Symbol symbolEOF(String name, int sym){
         Symbol symbol = symbolFactory.newSymbol(name, sym, new Location(yyline+1,yycolumn+1,((int)yychar)), new Location(yyline+1,yycolumn+yylength(),((int)yychar)+yylength()));
         return symbol;
@@ -253,3 +252,5 @@ LITERAL = \"
                                         yybegin(YYINITIAL);
                                     }
 }
+
+<<EOF>>                             { return symbolEOF("EOF", sym.EOF); }
