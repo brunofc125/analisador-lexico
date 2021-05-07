@@ -625,7 +625,7 @@ public class Parser extends java_cup.runtime.lr_parser {
         Iterator<Integer> it = expected_tokens_ids.iterator();
         int tokenId = it.next();
         
-        String error = "ERRO SINTÁTICO -> Linha "
+        String error = "ERRO SINTÁTICO >>> Linha "
                         + symbol.getLeft().getLine()
                         + ", coluna "
                         + symbol.getLeft().getColumn()
@@ -636,14 +636,14 @@ public class Parser extends java_cup.runtime.lr_parser {
             error += "\", \"" + this.mapTokens.getOrDefault(sym.terminalNames[tokenId], "Token não identificado");
         }
 
-        error += "\"], encontrado [\"" + symbol.value + "\"].";
+        error += "\"], encontrado [\"" + (symbol.value != null ? symbol.value : "vazio") + "\"].";
 
         this.report_error(error, symbol);
     }
 
     @Override
     public void report_fatal_error(String message, Object info) throws Exception {
-        super.report_fatal_error("Não foi possível continuar a análise.", info);
+        super.report_fatal_error("Análise interrompida.", info);
     }
 
     @Override

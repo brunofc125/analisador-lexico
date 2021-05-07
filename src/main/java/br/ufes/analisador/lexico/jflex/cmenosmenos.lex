@@ -40,7 +40,7 @@ import java_cup.runtime.ComplexSymbolFactory.Location;
 	this.symbolFactory = symbolFactory;
     }
 
-    public void executar() throws IOException {
+    public void executar() throws Exception {
         while(next_token().sym != sym.EOF);
     }
 
@@ -127,7 +127,7 @@ CHAR = \'
 LITERAL = \"
 
 /* erros */
-errorComment = [\/][*]
+errorComment = [\/][*] | [*][\/]
 charterLimit = (([_] | [:jletter:])+([_] | [:jletterdigit:])*){32}[^\n ]*
 incorrectNumber = {NUM_INT}[.] | [.]{NUM_INT} | {NUM_INT}[.]{NUM_INT}[.]([0-9]|[.])*
 
@@ -217,6 +217,7 @@ incorrectNumber = {NUM_INT}[.] | [.]{NUM_INT} | {NUM_INT}[.]{NUM_INT}[.]([0-9]|[
   {errorComment}                 { this.addErro("Linha " + (yyline+1) + ", coluna " + yycolumn + ": Falta fechar o comentário."); }    
   {charterLimit}                 { this.addErro("Linha " + (yyline+1) + ", coluna " + yycolumn + ": Identificador " + yytext().toUpperCase() + " excedeu o limite de caracteres."); }
   {incorrectNumber}              { this.addErro("Linha " + (yyline+1) + ", coluna " + yycolumn + ": " + yytext().toUpperCase() + " não é um número."); }
+  .                              { this.addErro("Linha " + (yyline+1) + ", coluna " + yycolumn + ": Caractere inválido " + yytext().toUpperCase() + "."); }
 }
 
 <STRING> {

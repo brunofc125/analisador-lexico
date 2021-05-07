@@ -132,7 +132,7 @@ public class PrincipalPresenter {
     private void exibirErros(List<ErroAnalisado> erros) {
         String saida = "<html>" + "<hr>";
 
-        saida += "<b>Análise do Código Fonte Finalizada...</b><br>" + "<hr>";
+        saida += "<b>Análise concluída</b><br>" + "<hr>";
 
         int countErros = erros.size() - 1;
 
@@ -141,7 +141,7 @@ public class PrincipalPresenter {
             if (countErros == 1) {
                 saida += countErros + " Erro Encontrado:";
             } else {
-                saida += countErros + " Erros Encontrados:";
+                saida += countErros + " erros foram encontrados:";
             }
 
             saida += "</b></font><br>";
@@ -158,6 +158,8 @@ public class PrincipalPresenter {
                 }
 
             }
+        } else {
+            saida += "<b>Nenhum erro encontrado</b>";
         }
         saida += "<hr>" + "</html>";
         view.getEpnSaida().setText(saida);
