@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package br.ufes.analisador.lexico.presenter;
 
 import br.ufes.analisador.lexico.analisador.Analisador;
@@ -23,10 +18,6 @@ import javax.swing.JScrollPane;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rtextarea.RTextScrollPane;
 
-/**
- *
- * @author bruno
- */
 public class PrincipalPresenter {
 
     private PrincipalView view;
@@ -68,12 +59,7 @@ public class PrincipalPresenter {
             }
 
             @Override
-            public void keyTyped(KeyEvent ke) {
-                /*if (!arquivo.foiEditado() && (ke.getModifiers() != KeyEvent.CTRL_MASK)) {
-                    arquivo.setEditado(true);
-                    updateTitle();
-                }*/
-            }
+            public void keyTyped(KeyEvent ke) {}
         });
 
         scrTxtCodigo = new RTextScrollPane(txtAreaCodigo);
@@ -81,7 +67,6 @@ public class PrincipalPresenter {
         scrTxtCodigo.setLineNumbersEnabled(true);
 
         scrTxtCodigo.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        //scrTxtCodigo.setBounds(0, 0, view.getPnlCodigo().getWidth(), view.getPnlCodigo().getHeight());
         scrTxtCodigo.setVisible(true);
 
         view.getPnlCodigo().add(scrTxtCodigo);
@@ -113,12 +98,7 @@ public class PrincipalPresenter {
 
     private void updateTitle() {
         String titulo = " - IDE C--";
-
-        /* if (arquivo.foiEditado()) {
-            titulo = "*" + this.arquivo.getNome() + titulo;
-        } else {
-            titulo = this.arquivo.getNome() + titulo;
-        }*/
+        
         view.setTitle(titulo);
     }
 

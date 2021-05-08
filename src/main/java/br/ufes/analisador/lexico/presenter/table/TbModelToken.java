@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package br.ufes.analisador.lexico.presenter.table;
 
 import java.util.ArrayList;
@@ -11,10 +6,6 @@ import java_cup.runtime.ComplexSymbolFactory;
 import java_cup.runtime.Symbol;
 import javax.swing.table.AbstractTableModel;
 
-/**
- *
- * @author bruno
- */
 public class TbModelToken extends AbstractTableModel {
 
     private List<Symbol> symbols;
